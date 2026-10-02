@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Fake ID Detector — Register</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <div class="bg-particles" id="particles"></div>
+
+  <div class="login-container">
+    <!-- Left panel — branding -->
+    <div class="brand-panel">
+      <div class="brand-content">
+        <div class="brand-icon">
+          <i class="fas fa-fingerprint"></i>
+        </div>
+        <h1>AI Fake ID Detector</h1>
+        <p>Create your account to start detecting forged identification documents with state-of-the-art AI technology.</p>
+        <div class="features">
+          <div class="feature-item">
+            <i class="fas fa-user-shield"></i>
+            <span>Secure Authentication</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-database"></i>
+            <span>Encrypted Data Storage</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-clock"></i>
+            <span>24/7 Monitoring</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right panel — register form -->
+    <div class="form-panel">
+      <div class="form-wrapper">
+        <div class="form-header">
+          <h2>Create Account</h2>
+          <p>Join the AI-powered identity verification platform</p>
+        </div>
+
+        <div id="alert-box" class="alert hidden">
+          <i class="fas fa-circle-exclamation"></i>
+          <span id="alert-message"></span>
+        </div>
+
+        <form id="register-form" novalidate>
+          <!-- Full Name -->
+          <div class="input-group">
+            <label for="fullname">Full Name</label>
+            <div class="input-wrapper">
+              <i class="fas fa-user"></i>
+              <input type="text" id="fullname" name="fullname" placeholder="John Doe" required />
+            </div>
+            <span class="error-text" id="fullname-error"></span>
+          </div>
+
+          <!-- Email -->
+          <div class="input-group">
+            <label for="email">Email Address</label>
+            <div class="input-wrapper">
+              <i class="fas fa-envelope"></i>
+              <input type="email" id="email" name="email" placeholder="you@example.com" required />
+            </div>
+            <span class="error-text" id="email-error"></span>
+          </div>
+
+          <!-- Password -->
+          <div class="input-group">
+            <label for="password">Password</label>
+            <div class="input-wrapper">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="password" name="password" placeholder="Min. 8 characters" required minlength="8" />
+              <button type="button" class="toggle-password" id="toggle-password" aria-label="Toggle password visibility">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+            <span class="error-text" id="password-error"></span>
+            <!-- Strength meter -->
+            <div class="password-strength">
+              <div class="strength-bar" id="strength-bar"></div>
+            </div>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="input-group">
+            <label for="confirm-password">Confirm Password</label>
+            <div class="input-wrapper">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="confirm-password" name="confirmPassword" placeholder="Re-enter your password" required />
+            </div>
+            <span class="error-text" id="confirm-password-error"></span>
+          </div>
+
+          <!-- Terms -->
+          <div class="form-options">
+            <label class="checkbox-label">
+              <input type="checkbox" id="terms" name="terms" required />
+              <span class="checkmark"></span>
+              I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-login" id="btn-register">
+            <span class="btn-text">Create Account</span>
+            <span class="btn-loader hidden"><i class="fas fa-spinner fa-spin"></i></span>
+          </button>
+        </form>
+
+        <p class="register-link">
+          Already have an account? <a href="index.html">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/register.js"></script>
+</body>
+</html>
