@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SURAKSHA | Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Yatra+One&display=swap">
+<!-- Link to your external CSS file -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ============================== -->
+  <!-- 1. LOGIN SCREEN                -->
+  <!-- ============================== -->
+  <div id="login-screen" class="fade-in">
+    <div class="login-card">
+      <div class="logo-container">
+        <img src="watermarked_img_11655698013989311812.jpg" class="logo-img" alt="SURAKSHA Logo">
+        <h1 class="brand-text">Suraksha</h1>
+      </div>
+      
+      <form id="login-form">
+        <input type="email" id="email" placeholder="Authorized Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit" class="btn" id="login-btn">Authenticate</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- 2. DASHBOARD / WORKSPACE       -->
+  <!-- ============================== -->
+  <div id="dashboard-screen" class="hidden">
+    <header class="dash-header">
+      <div class="logo-container">
+        <img src="watermarked_img_11655698013989311812.jpg" class="logo-img" alt="SURAKSHA">
+        <h1 class="brand-text">Suraksha Intelligence</h1>
+      </div>
+      <button class="logout-btn" id="logout-btn">Secure Logout</button>
+    </header>
+
+    <div class="workspace">
+      
+      <!-- Upload Panel -->
+      <div class="panel">
+        <h2 class="panel-title">Document Input</h2>
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">
+          Upload JPEG, PNG, or PDF for automated NLM extraction and forgery screening.
+        </p>
+        
+        <div class="upload-zone" id="drop-zone">
+          <input type="file" id="file-input" accept=".jpg,.jpeg,.png,.pdf" hidden>
+          <div class="upload-icon">⇪</div>
+          <div class="upload-text">Drag & Drop Document Here</div>
+          <div class="upload-sub">or click to browse local files</div>
+          
+          <!-- Scanning Overlay (Triggered by JS) -->
+          <div class="scan-container" id="scan-overlay">
+            <div class="scan-line"></div>
+            <div class="scan-text">NLM MODEL ANALYZING...</div>
+          </div>
+        </div>
+        
+        <div id="file-info" style="margin-top: 15px; font-size: 13px; color: var(--gold); text-align: center;"></div>
+      </div>
+
+      <!-- Detection Results Panel -->
+      <div class="panel">
+        <h2 class="panel-title">NLM Detection Report</h2>
+        
+        <!-- Empty State -->
+        <div class="results-placeholder" id="results-empty">
+          Awaiting document upload for processing...
+        </div>
+
+        <!-- Populated State -->
+        <div class="results-content" id="results-data">
+          
+          <!-- Dynamic Score Ring -->
+          <div class="score-circle" id="score-ring">
+            <div class="score-num" id="score-text">98%</div>
+            <div class="score-label" id="score-label-text">Authentic</div>
+          </div>
+
+          <!-- Extracted Data list -->
+          <div class="data-row">
+            <span class="data-label">Document Type</span>
+            <span class="data-value" id="res-type">National ID</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Extracted Name</span>
+            <span class="data-value" id="res-name">Debayan Garai</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">ID Number Format</span>
+            <span class="data-value" id="res-format-status" style="color:var(--success);">Verified</span>
+          </div>
+          
+          <!-- NLM Text Insights -->
+          <div class="nlm-analysis">
+            <div class="nlm-title">NLM Semantic Analysis</div>
+            <div class="nlm-text" id="res-notes">
+              Natural Language Model confirms textual alignments match standard issued templates. No anomalous font kerning or synthetic text overlays detected in the OCR string generation.
+            </div>
+          </div>
+          
+          <button class="btn" style="margin-top:20px;" id="reset-btn">Process Next Document</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Link to your external JS file -->
+  <script src="app.js"></script>
+</body>
+</html>
