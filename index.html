@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SURAKSHA — Fake identity & document screening</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- Added Yatra One (Indian script style) for headings and Montserrat for clean paragraph text -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Yatra+One&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="logo" href="#top">
+    <!-- Using the direct link to your generated logo, size increased to 60px -->
+    <img src="watermarked_img_11655698013989311812.jpg" class="logo-img" alt="SURAKSHA Logo">SURAKSHA
+  </a>
+  <nav><a href="#demo">Screen a document</a><a href="#how">How it works</a><a href="#privacy">Privacy</a></nav>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="hero-copy">
+    <h1>Catch forged IDs before they become customers.</h1>
+    <p class="lead">SURAKSHA checks an ID photo and its details together: pixel-level edit traces, number checksums, date and name patterns. A small machine-learning model combines them into one risk score you can explain.</p>
+    <div class="cta"><a class="btn primary" href="#demo">Screen a document</a><a class="btn" href="#how">See how it decides</a></div>
+  </div>
+  <div class="hero-card" aria-hidden="true">
+    <div class="idcard">
+      <div class="photo"></div>
+      <div class="lines"><i></i><i></i><i class="s"></i><i></i></div>
+      <div class="chip">ID 4821 0937 6612</div>
+      <div class="beam"></div>
+      <span class="flag f1">Edited region</span>
+      <span class="flag f2">Checksum fails</span>
+      <span class="flag f3">Font mismatch</span>
+    </div>
+    <div class="verdict-chip">Risk 87% · Reject</div>
+  </div>
+</section>
+
+<section class="facts">
+  <div><b data-count="6">0</b><span>signals scored together</span></div>
+  <div><b data-count="0">0</b><span>files uploaded to a server</span></div>
+  <div><b data-count="1" data-suffix="s">0</b><span>typical time to a result</span></div>
+</section>
+
+<section id="demo" class="demo">
+  <h2>Screen a document</h2>
+  <p class="sub">Add the ID photo, type the details printed on it, and run the check. Everything runs in your browser.</p>
+  <div class="demo-grid">
+    <form id="form" class="panel" novalidate>
+      <label class="drop" id="drop" tabindex="0">
+        <input type="file" id="file" accept="image/*" hidden>
+        <span id="dropText">Drop an ID photo here or click to choose</span>
+        <canvas id="orig" width="1" height="1"></canvas>
+      </label>
+      <div class="row">
+        <label>Document type
+          <select id="type"><option value="aadhaar">Aadhaar</option><option value="pan">PAN</option><option value="passport">Passport</option></select>
+        </label>
+        <label>ID number<input id="idnum" placeholder="e.g. 2345 6789 0123" autocomplete="off"></label>
+      </div>
+      <div class="row">
+        <label>Full name<input id="name" placeholder="As printed on the ID" autocomplete="off"></label>
+        <label>Date of birth<input id="dob" type="date"></label>
+      </div>
+      <div class="actions">
+        <button class="btn primary" type="submit">Run screening</button>
+        <button class="btn" type="button" id="sampleGood">Fill valid sample</button>
+        <button class="btn" type="button" id="sampleBad">Fill suspicious sample</button>
+      </div>
+      <p class="note" id="modelNote">Training model…</p>
+    </form>
+
+    <div class="panel result" id="result" aria-live="polite">
+      <div class="gauge">
+        <svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="52"/><circle id="arc" class="arc" cx="60" cy="60" r="52"/></svg>
+        <div class="gnum"><b id="score">–</b><small id="verdict">Waiting for input</small></div>
+      </div>
+      <div class="detail">
+        <h3>Why this score</h3>
+        <ul id="factors"><li class="empty">Run a screening to see which signals pushed the score up or down.</li></ul>
+        <div class="ela" id="elaWrap" hidden><canvas id="ela"></canvas><p>Edit-trace map: brighter areas recompress differently from the rest of the image.</p></div>
+        <button class="btn" id="download" type="button" hidden>Show report (JSON)</button><pre id="report" hidden></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="how">
+  <h2>How it decides</h2>
+  <ol>
+    <li><h3>Look at the pixels</h3><p>The photo is re-saved as a JPEG and compared with the original. Pasted or retouched areas recompress unevenly, which shows up as an edit-trace map.</p></li>
+    <li><h3>Check the details</h3><p>Aadhaar numbers are tested with the Verhoeff checksum, PAN and passport numbers against their format rules, and dates of birth and names for plausibility.</p></li>
+    <li><h3>Score it together</h3><p>A logistic-regression model weighs all six signals and returns one probability, plus how much each signal contributed.</p></li>
+  </ol>
+</section>
+
+<section id="privacy" class="privacy">
+  <h2>Privacy and limits</h2>
+  <p>Images are analysed on your device and never sent anywhere. This demo model is trained on synthetic examples when the page loads, so use it to explore the approach, not to make real onboarding decisions. A production system needs a labelled dataset of real genuine and forged documents, face and liveness checks, and verification against the issuing authority.</p>
+</section>
+</main>
+<footer>SURAKSHA · Fake identity and document screening demo</footer>
+<script src="app.js"></script>
+</body>
+</html>
