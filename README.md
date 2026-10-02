@@ -1,5 +1,3 @@
-
-
  # 🛡️ AI-Based Fake Identity & Document Screening System
  
 
@@ -196,6 +194,53 @@ Certificate Number
  # 📌REPRESENTAION of Workflow
 
 ---
+flowchart TD
+    A([👤 User]) --> B[📄 Upload Identity Document]
+
+    B --> C[🌐 Frontend<br/>HTML • CSS • JavaScript]
+
+    C --> D{🔍 File Validation}
+
+    D -->|Invalid| E[❌ Validation Error]
+    D -->|Valid| F[🚀 Python Backend API]
+
+    F --> G[🐍 Document Preprocessing]
+
+    G --> H[🔤 OCR Extraction]
+    G --> I[🖼️ Image & Feature Analysis]
+
+    H --> J[📝 Extracted Information]
+    I --> K[📊 Document Features]
+
+    J --> L[🧠 Tampering & Anomaly Detection]
+    K --> L
+
+    L --> M[🔐 Information Validation]
+
+    M --> N[📈 Risk Score Generation]
+
+    N --> O[(🗄️ SQL Database)]
+
+    O --> P[📡 API Response]
+
+    P --> Q[📊 Verification Dashboard]
+
+    Q --> R([👮 Authorized Review])
+
+    classDef frontend fill:#2563eb,color:#fff,stroke:#1e40af,stroke-width:2px
+    classDef backend fill:#7c3aed,color:#fff,stroke:#5b21b6,stroke-width:2px
+    classDef ai fill:#0891b2,color:#fff,stroke:#0e7490,stroke-width:2px
+    classDef database fill:#059669,color:#fff,stroke:#047857,stroke-width:2px
+    classDef output fill:#ea580c,color:#fff,stroke:#c2410c,stroke-width:2px
+    classDef error fill:#dc2626,color:#fff,stroke:#991b1b,stroke-width:2px
+
+    class B,C frontend
+    class F,G backend
+    class H,I,J,K,L,M,N ai
+    class O database
+    class P,Q,R output
+    class E error
+
 
  # 🛠️ Technology Stack
 
