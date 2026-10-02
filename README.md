@@ -194,52 +194,38 @@ Certificate Number
  # 📌REPRESENTAION of Workflow
 
 ---
-flowchart TD
-    A([👤 User]) --> B[📄 Upload Identity Document]
+## Document Verification Workflow
 
-    B --> C[🌐 Frontend<br/>HTML • CSS • JavaScript]
+```mermaid
+graph LR
+    A[User] --> B[Upload Document]
+    B --> C[Frontend]
+    C --> D[File Validation]
 
-    C --> D{🔍 File Validation}
+    D -->|Valid| E[Python API]
+    D -->|Invalid| X[Validation Error]
 
-    D -->|Invalid| E[❌ Validation Error]
-    D -->|Valid| F[🚀 Python Backend API]
+    E --> F[Document Preprocessing]
 
-    F --> G[🐍 Document Preprocessing]
+    F --> G[OCR Processing]
+    F --> H[Feature Extraction]
 
-    G --> H[🔤 OCR Extraction]
-    G --> I[🖼️ Image & Feature Analysis]
+    G --> I[Extracted Text]
+    H --> J[Document Features]
 
-    H --> J[📝 Extracted Information]
-    I --> K[📊 Document Features]
+    I --> K[Tampering Detection]
+    J --> K
 
-    J --> L[🧠 Tampering & Anomaly Detection]
-    K --> L
+    K --> L[Information Validation]
+    L --> M[Risk Score Generation]
 
-    L --> M[🔐 Information Validation]
+    M --> N[SQL Database]
+    N --> O[API Response]
 
-    M --> N[📈 Risk Score Generation]
+    O --> P[Verification Dashboard]
+    P --> Q[Verification Result]
+```
 
-    N --> O[(🗄️ SQL Database)]
-
-    O --> P[📡 API Response]
-
-    P --> Q[📊 Verification Dashboard]
-
-    Q --> R([👮 Authorized Review])
-
-    classDef frontend fill:#2563eb,color:#fff,stroke:#1e40af,stroke-width:2px
-    classDef backend fill:#7c3aed,color:#fff,stroke:#5b21b6,stroke-width:2px
-    classDef ai fill:#0891b2,color:#fff,stroke:#0e7490,stroke-width:2px
-    classDef database fill:#059669,color:#fff,stroke:#047857,stroke-width:2px
-    classDef output fill:#ea580c,color:#fff,stroke:#c2410c,stroke-width:2px
-    classDef error fill:#dc2626,color:#fff,stroke:#991b1b,stroke-width:2px
-
-    class B,C frontend
-    class F,G backend
-    class H,I,J,K,L,M,N ai
-    class O database
-    class P,Q,R output
-    class E error
 
 
  # 🛠️ Technology Stack
