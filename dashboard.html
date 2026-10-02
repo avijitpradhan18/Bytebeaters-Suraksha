@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Fake ID Detector — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dashboard {
+      text-align: center;
+      padding: 3rem;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 1.5rem;
+      max-width: 600px;
+    }
+    .dashboard i.fa-check-circle { font-size: 4rem; color: #22c55e; margin-bottom: 1rem; }
+    .dashboard h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .dashboard p { color: #94a3b8; margin-bottom: 1.5rem; }
+    .dashboard .user-info { color: #818cf8; font-weight: 600; font-size: 1.1rem; margin-bottom: 2rem; }
+    .btn-logout {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      padding: 0.75rem 2rem;
+      border: none;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .btn-logout:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <i class="fas fa-check-circle"></i>
+    <h1>Login Successful!</h1>
+    <p>Welcome to the AI-Based Fake Identification Detection Dashboard</p>
+    <div class="user-info" id="user-info"></div>
+    <button class="btn-logout" id="btn-logout">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const user  = JSON.parse(localStorage.getItem('user') || '{}');
+
+    if (!token) {
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('user-info').textContent =
+      `Logged in as: ${user.fullname || user.email || 'User'}`;
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html>
