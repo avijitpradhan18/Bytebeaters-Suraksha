@@ -6,21 +6,17 @@
 <title>SURAKSHA | Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Yatra+One&display=swap">
-<!-- Link to your external CSS file -->
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- ============================== -->
-  <!-- 1. LOGIN SCREEN                -->
-  <!-- ============================== -->
+  <!-- 1. LOGIN SCREEN (prototype only: any email/password is accepted) -->
   <div id="login-screen" class="fade-in">
     <div class="login-card">
       <div class="logo-container">
         <img src="watermarked_img_11655698013989311812.jpg" class="logo-img" alt="SURAKSHA Logo">
         <h1 class="brand-text">Suraksha</h1>
       </div>
-      
       <form id="login-form">
         <input type="email" id="email" placeholder="Authorized Email" required>
         <input type="password" id="password" placeholder="Password" required>
@@ -29,9 +25,7 @@
     </div>
   </div>
 
-  <!-- ============================== -->
-  <!-- 2. DASHBOARD / WORKSPACE       -->
-  <!-- ============================== -->
+  <!-- 2. DASHBOARD / WORKSPACE -->
   <div id="dashboard-screen" class="hidden">
     <header class="dash-header">
       <div class="logo-container">
@@ -42,78 +36,81 @@
     </header>
 
     <div class="workspace">
-      
+
       <!-- Upload Panel -->
       <div class="panel">
         <h2 class="panel-title">Document Input</h2>
         <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">
-          Upload JPEG, PNG, or PDF for automated NLM extraction and forgery screening.
+          Upload a JPEG or PNG of the ID card and a live photo of the person for OCR, face matching and document screening.
         </p>
-        
+
         <div class="upload-zone" id="drop-zone">
-          <input type="file" id="file-input" accept=".jpg,.jpeg,.png,.pdf" hidden>
-          <div class="upload-icon">⇪</div>
-          <div class="upload-text">Drag & Drop Document Here</div>
+          <input type="file" id="file-input" accept=".jpg,.jpeg,.png" hidden>
+          <div class="upload-icon">&#8682;</div>
+          <div class="upload-text">Drag &amp; Drop ID Document Here</div>
           <div class="upload-sub">or click to browse local files</div>
-          
-          <!-- Scanning Overlay (Triggered by JS) -->
           <div class="scan-container" id="scan-overlay">
             <div class="scan-line"></div>
-            <div class="scan-text">NLM MODEL ANALYZING...</div>
+            <div class="scan-text">ANALYZING DOCUMENT...</div>
           </div>
         </div>
-        
         <div id="file-info" style="margin-top: 15px; font-size: 13px; color: var(--gold); text-align: center;"></div>
+
+        <!-- Live photo (required by the backend for face matching) -->
+        <div style="margin-top:18px;">
+          <label for="live-input" style="font-size:13px; color:var(--text-muted); display:block; margin-bottom:6px;">Live photo of the person</label>
+          <input type="file" id="live-input" accept=".jpg,.jpeg,.png" capture="user" style="font-size:13px; color:var(--text-muted);">
+          <div id="live-info" style="margin-top:6px; font-size:13px; color: var(--gold);"></div>
+        </div>
+
+        <button class="btn" style="margin-top:20px; width:100%;" id="scan-btn" disabled>Run Screening</button>
       </div>
 
-      <!-- Detection Results Panel -->
+      <!-- Results Panel -->
       <div class="panel">
-        <h2 class="panel-title">NLM Detection Report</h2>
-        
-        <!-- Empty State -->
+        <h2 class="panel-title">Screening Report</h2>
+
         <div class="results-placeholder" id="results-empty">
-          Awaiting document upload for processing...
+          Awaiting document and live photo...
         </div>
 
-        <!-- Populated State -->
         <div class="results-content" id="results-data">
-          
-          <!-- Dynamic Score Ring -->
+
           <div class="score-circle" id="score-ring">
-            <div class="score-num" id="score-text">98%</div>
-            <div class="score-label" id="score-label-text">Authentic</div>
+            <div class="score-num" id="score-text">--</div>
+            <div class="score-label" id="score-label-text">Document risk</div>
           </div>
 
-          <!-- Extracted Data list -->
           <div class="data-row">
-            <span class="data-label">Document Type</span>
-            <span class="data-value" id="res-type">National ID</span>
+            <span class="data-label">Decision</span>
+            <span class="data-value" id="res-status">--</span>
           </div>
           <div class="data-row">
-            <span class="data-label">Extracted Name</span>
-            <span class="data-value" id="res-name">Debayan Garai</span>
+            <span class="data-label">Face match</span>
+            <span class="data-value" id="res-face">--</span>
           </div>
           <div class="data-row">
-            <span class="data-label">ID Number Format</span>
-            <span class="data-value" id="res-format-status" style="color:var(--success);">Verified</span>
+            <span class="data-label">Document text checks</span>
+            <span class="data-value" id="res-format-status">--</span>
           </div>
-          
-          <!-- NLM Text Insights -->
+
           <div class="nlm-analysis">
-            <div class="nlm-title">NLM Semantic Analysis</div>
-            <div class="nlm-text" id="res-notes">
-              Natural Language Model confirms textual alignments match standard issued templates. No anomalous font kerning or synthetic text overlays detected in the OCR string generation.
-            </div>
+            <div class="nlm-title">Why this score</div>
+            <div class="nlm-text" id="res-notes">--</div>
+            <ul id="res-flags" style="margin:10px 0 0 18px; padding:0; font-size:13px; line-height:1.6;"></ul>
           </div>
-          
-          <button class="btn" style="margin-top:20px;" id="reset-btn">Process Next Document</button>
+
+          <p style="margin-top:14px; font-size:11px; color:var(--text-muted);">
+            Screening signal only. A trained officer makes the final decision.
+          </p>
+
+          <button class="btn" style="margin-top:14px;" id="reset-btn">Process Next Document</button>
         </div>
 
       </div>
     </div>
   </div>
 
-  <!-- Link to your external JS file -->
   <script src="app.js"></script>
 </body>
 </html>

@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
-  /* --- VIEW ROUTING (Connect your backend login logic here) --- */
+  // Where the FastAPI backend runs. Change this if the backend is on another machine/URL.
+  const API_BASE = "http://127.0.0.1:8000";
+
+  /* --- VIEW ROUTING (prototype login: any email/password is accepted) --- */
   const loginScreen = document.getElementById('login-screen');
   const dashboardScreen = document.getElementById('dashboard-screen');
   const loginForm = document.getElementById('login-form');
@@ -8,10 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
-    // Simulate a successful login transition
     loginBtn.textContent = "Verifying...";
-    
     setTimeout(() => {
       loginScreen.classList.add('hidden');
       dashboardScreen.classList.remove('hidden');
@@ -20,114 +20,157 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   logoutBtn.addEventListener('click', () => {
-    // Return to login screen
     dashboardScreen.classList.add('hidden');
     loginScreen.classList.remove('hidden');
     loginBtn.textContent = "Authenticate";
-    // Clear inputs
     document.getElementById('email').value = "";
     document.getElementById('password').value = "";
   });
 
-  /* --- DRAG & DROP FILE HANDLING --- */
+  /* --- ELEMENTS --- */
   const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('file-input');
   const fileInfo = document.getElementById('file-info');
+  const liveInput = document.getElementById('live-input');
+  const liveInfo = document.getElementById('live-info');
+  const scanBtn = document.getElementById('scan-btn');
   const scanOverlay = document.getElementById('scan-overlay');
-  
+
   const resultsEmpty = document.getElementById('results-empty');
   const resultsData = document.getElementById('results-data');
   const resetBtn = document.getElementById('reset-btn');
 
-  // Click to browse
-  dropZone.addEventListener('click', () => fileInput.click());
+  const scoreRing = document.getElementById('score-ring');
+  const scoreText = document.getElementById('score-text');
+  const scoreLabelText = document.getElementById('score-label-text');
+  const resStatus = document.getElementById('res-status');
+  const resFace = document.getElementById('res-face');
+  const resFormat = document.getElementById('res-format-status');
+  const resNotes = document.getElementById('res-notes');
+  const resFlags = document.getElementById('res-flags');
 
-  // Drag hover effects
-  dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.classList.add('dragover');
-  });
-  
-  dropZone.addEventListener('dragleave', () => {
-    dropZone.classList.remove('dragover');
-  });
-  
-  // Drop execution
+  let docFile = null;
+  let liveFile = null;
+  let busy = false;
+
+  const ALLOWED = ["image/jpeg", "image/png"];
+  const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+
+  function updateButton() { scanBtn.disabled = !(docFile && liveFile) || busy; }
+
+  function validate(file) {
+    if (!ALLOWED.includes(file.type)) return "Only JPEG or PNG images are supported.";
+    if (file.size > MAX_BYTES) return "File is too large (max 10 MB).";
+    return null;
+  }
+
+  /* --- DOCUMENT FILE (drag & drop or click) --- */
+  function setDoc(file) {
+    const err = validate(file);
+    if (err) { docFile = null; fileInfo.textContent = err; updateButton(); return; }
+    docFile = file;
+    fileInfo.textContent = `Attached: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    updateButton();
+  }
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
   dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropZone.classList.remove('dragover');
-    if (e.dataTransfer.files.length) {
-      handleFile(e.dataTransfer.files[0]);
-    }
+    if (e.dataTransfer.files.length) setDoc(e.dataTransfer.files[0]);
   });
-  
-  // File input execution
-  fileInput.addEventListener('change', function() {
-    if (this.files.length) {
-      handleFile(this.files[0]);
-    }
+  fileInput.addEventListener('change', function () { if (this.files.length) setDoc(this.files[0]); });
+
+  /* --- LIVE PHOTO --- */
+  liveInput.addEventListener('change', function () {
+    if (!this.files.length) return;
+    const file = this.files[0];
+    const err = validate(file);
+    if (err) { liveFile = null; liveInfo.textContent = err; updateButton(); return; }
+    liveFile = file;
+    liveInfo.textContent = `Attached: ${file.name}`;
+    updateButton();
   });
 
-  function handleFile(file) {
-    // Display filename and size
-    fileInfo.textContent = `Attached: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-    
-    // Trigger NLM Scanning UI
+  /* --- RUN SCREENING (calls the FastAPI backend) --- */
+  scanBtn.addEventListener('click', async () => {
+    if (!(docFile && liveFile) || busy) return;
+    busy = true; updateButton();
+
     scanOverlay.classList.add('active');
-    resultsEmpty.textContent = "Extracting details and running NLM fraud detection...";
+    resultsEmpty.textContent = "Running OCR, face match and document screening... (the first scan can take up to a minute)";
     resultsEmpty.style.display = "flex";
     resultsData.classList.remove('active');
 
-    /* 
-     * NOTE: CONNECT BACKEND EXTRACTION HERE.
-     * Replace the setTimeout below with your fetch() call passing formData 
-     * to your Python/Node backend. Then populate the UI with the response.
-     */
-    
-    setTimeout(() => {
-      // Stop scanning animation
+    try {
+      const formData = new FormData();
+      formData.append("document", docFile);
+      formData.append("live_photo", liveFile);
+
+      const res = await fetch(`${API_BASE}/api/scan`, { method: "POST", body: formData });
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const data = await res.json();
+      showResult(data);
+    } catch (err) {
+      resultsEmpty.textContent = "Could not complete the scan: " + err.message +
+        ". Check that the backend is running at " + API_BASE + ".";
+    } finally {
       scanOverlay.classList.remove('active');
-      
-      // Hide empty state, Show results
-      resultsEmpty.style.display = "none";
-      resultsData.classList.add('active');
+      busy = false; updateButton();
+    }
+  });
 
-      // MOCK BACKEND RESPONSE DATA:
-      // Simulate checking logic - dynamically change these based on backend response
-      const mockIsFake = Math.random() > 0.7; // 30% chance to simulate a fake document
-      const scoreRing = document.getElementById('score-ring');
-      const scoreText = document.getElementById('score-text');
-      const scoreLabelText = document.getElementById('score-label-text');
-      const resNotes = document.getElementById('res-notes');
-      const resFormatStatus = document.getElementById('res-format-status');
+  function showResult(data) {
+    const risk = Number(data.doc_risk_score);
+    const suspicious = data.doc_label === "SUSPICIOUS";
+    const flags = Array.isArray(data.doc_flags) ? data.doc_flags : [];
 
-      if (mockIsFake) {
-        scoreRing.classList.add('danger');
-        scoreText.textContent = "12%";
-        scoreLabelText.textContent = "High Risk";
-        resFormatStatus.textContent = "Failed";
-        resFormatStatus.style.color = "var(--danger)";
-        resNotes.textContent = "NLM detects severe structural anomalies. Text alignment on DOB field indicates digital tampering. Verhoeff checksum validation failed.";
-        resNotes.style.color = "var(--danger)";
-      } else {
-        scoreRing.classList.remove('danger');
-        scoreText.textContent = "98%";
-        scoreLabelText.textContent = "Authentic";
-        resFormatStatus.textContent = "Verified";
-        resFormatStatus.style.color = "var(--success)";
-        resNotes.textContent = "Natural Language Model confirms textual alignments match standard issued templates. No synthetic text overlays detected.";
-        resNotes.style.color = "#ccc";
-      }
+    resultsEmpty.style.display = "none";
+    resultsData.classList.add('active');
 
-    }, 2500); // 2.5 second simulated processing time
+    // Risk ring: shows RISK (0 = low, 100 = high), not "authenticity".
+    scoreText.textContent = Number.isFinite(risk) ? String(risk) : "--";
+    scoreLabelText.textContent = suspicious ? "High risk" : "Low risk";
+    scoreRing.classList.toggle('danger', suspicious);
+
+    // Decision
+    const status = String(data.status || "");
+    resStatus.textContent = status;
+    resStatus.style.color = status.startsWith("PASS") ? "var(--success)"
+                          : status.startsWith("REVIEW") ? "var(--gold)" : "var(--danger)";
+
+    // Face match
+    const matched = data.face_match_verified === true;
+    resFace.textContent = matched ? "Match" : "No match";
+    resFace.style.color = matched ? "var(--success)" : "var(--danger)";
+
+    // Text checks + reasons
+    resFormat.textContent = suspicious ? "Needs review" : "No issues found";
+    resFormat.style.color = suspicious ? "var(--gold)" : "var(--success)";
+    resNotes.textContent = flags.length
+      ? "The document text raised the following concerns:"
+      : "No inconsistencies found in the document text. This does not prove the card is genuine.";
+    resNotes.style.color = flags.length ? "var(--danger)" : "#ccc";
+
+    resFlags.replaceChildren();                       // textContent only: never insert server text as HTML
+    flags.forEach((f) => {
+      const li = document.createElement('li');
+      li.textContent = f;
+      resFlags.appendChild(li);
+    });
   }
 
-  // Reset Workspace Button
+  /* --- RESET --- */
   resetBtn.addEventListener('click', () => {
-    fileInput.value = "";
-    fileInfo.textContent = "";
+    fileInput.value = ""; liveInput.value = "";
+    docFile = null; liveFile = null;
+    fileInfo.textContent = ""; liveInfo.textContent = "";
+    resFlags.replaceChildren();
     resultsData.classList.remove('active');
     resultsEmpty.style.display = "flex";
-    resultsEmpty.textContent = "Awaiting document upload for processing...";
+    resultsEmpty.textContent = "Awaiting document and live photo...";
+    updateButton();
   });
 });

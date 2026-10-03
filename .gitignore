@@ -1,0 +1,40 @@
+# --- Python virtual environments (never commit these) ---
+venv/
+.venv/
+env/
+
+# --- Python cache ---
+__pycache__/
+*.pyc
+*.pyo
+
+# --- Local databases (hold scan records and Aadhaar-related text) ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Secrets and local config ---
+.env
+.env.*
+*.pem
+*.key
+
+# --- Real ID scans, photos and OCR dumps (personal data) ---
+uploads/
+scans/
+scan_history*.json
+response_*.json
+*.csv
+
+# --- Face-model weights downloaded automatically by DeepFace / EasyOCR ---
+.deepface/
+.EasyOCR/
+
+# --- Editor / OS files ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Notebook checkpoints ---
+.ipynb_checkpoints/
