@@ -1,30 +1,55 @@
 document.addEventListener("DOMContentLoaded", () => {
-  /* --- VIEW ROUTING (Connect your backend login logic here) --- */
+  /* --- VIEW ROUTING & AUTHENTICATION --- */
   const loginScreen = document.getElementById('login-screen');
   const dashboardScreen = document.getElementById('dashboard-screen');
   const loginForm = document.getElementById('login-form');
   const logoutBtn = document.getElementById('logout-btn');
   const loginBtn = document.getElementById('login-btn');
 
-  loginForm.addEventListener('submit', (e) => {
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // Simulate a successful login transition
-    loginBtn.textContent = "Verifying...";
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
     
-    setTimeout(() => {
-      loginScreen.classList.add('hidden');
-      dashboardScreen.classList.remove('hidden');
-      dashboardScreen.classList.add('fade-in');
-    }, 800);
+    loginBtn.textContent = "Verifying...";
+    loginBtn.disabled = true;
+
+    try {
+      // 1. UPDATE THIS URL to your backend login endpoint
+      const response = await fetch('http://192.168.1.20:8000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: email, password: password })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Optional: Save auth token if your backend uses JWT
+        // localStorage.setItem('token', data.token); 
+        
+        loginScreen.classList.add('hidden');
+        dashboardScreen.classList.remove('hidden');
+        dashboardScreen.classList.add('fade-in');
+      } else {
+        alert("Authentication failed. Please check your credentials.");
+      }
+    } catch (error) {
+      console.error("Backend connection error:", error);
+      alert("Cannot connect to server. Is your backend running?");
+    } finally {
+      loginBtn.textContent = "Authenticate";
+      loginBtn.disabled = false;
+    }
   });
 
   logoutBtn.addEventListener('click', () => {
-    // Return to login screen
+    // localStorage.removeItem('token'); // Clear token on logout
     dashboardScreen.classList.add('hidden');
     loginScreen.classList.remove('hidden');
-    loginBtn.textContent = "Authenticate";
-    // Clear inputs
+    
     document.getElementById('email').value = "";
     document.getElementById('password').value = "";
   });
@@ -39,10 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultsData = document.getElementById('results-data');
   const resetBtn = document.getElementById('reset-btn');
 
-  // Click to browse
   dropZone.addEventListener('click', () => fileInput.click());
 
-  // Drag hover effects
   dropZone.addEventListener('dragover', (e) => {
     e.preventDefault();
     dropZone.classList.add('dragover');
@@ -52,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
     dropZone.classList.remove('dragover');
   });
   
-  // Drop execution
   dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropZone.classList.remove('dragover');
@@ -61,68 +83,85 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   
-  // File input execution
   fileInput.addEventListener('change', function() {
     if (this.files.length) {
       handleFile(this.files[0]);
     }
   });
 
-  function handleFile(file) {
-    // Display filename and size
+  async function handleFile(file) {
     fileInfo.textContent = `Attached: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
     
-    // Trigger NLM Scanning UI
     scanOverlay.classList.add('active');
     resultsEmpty.textContent = "Extracting details and running NLM fraud detection...";
     resultsEmpty.style.display = "flex";
     resultsData.classList.remove('active');
 
-    /* 
-     * NOTE: CONNECT BACKEND EXTRACTION HERE.
-     * Replace the setTimeout below with your fetch() call passing formData 
-     * to your Python/Node backend. Then populate the UI with the response.
-     */
-    
-    setTimeout(() => {
-      // Stop scanning animation
-      scanOverlay.classList.remove('active');
+    // Package the file to send to the backend
+    const formData = new FormData();
+    // 'document' is the key your backend must look for. Update if your backend expects 'file' or 'image'
+    formData.append('document', file); 
+
+    try {
+      // 2. UPDATE THIS URL to your backend upload/analysis endpoint
+      const response = await fetch('http://192.168.1.20:8000/api/scan', {
+        method: 'POST',
+        // headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }, // Uncomment if using JWT
+        body: formData // Note: Do NOT set Content-Type header when sending FormData, the browser does it automatically
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status: ${response.status}`);
+      }
+
+      // 3. EXPECTED BACKEND JSON STRUCTURE
+      // Your backend needs to return JSON that looks like this:
+      // {
+      //   "isFake": false,
+      //   "score": "98%",
+      //   "label": "Authentic",
+      //   "documentType": "National ID",
+      //   "extractedName": "Debayan Garai",
+      //   "formatStatus": "Verified",
+      //   "notes": "Natural Language Model confirms textual alignments..."
+      // }
+      const data = await response.json();
       
-      // Hide empty state, Show results
+      scanOverlay.classList.remove('active');
       resultsEmpty.style.display = "none";
       resultsData.classList.add('active');
 
-      // MOCK BACKEND RESPONSE DATA:
-      // Simulate checking logic - dynamically change these based on backend response
-      const mockIsFake = Math.random() > 0.7; // 30% chance to simulate a fake document
       const scoreRing = document.getElementById('score-ring');
       const scoreText = document.getElementById('score-text');
       const scoreLabelText = document.getElementById('score-label-text');
       const resNotes = document.getElementById('res-notes');
       const resFormatStatus = document.getElementById('res-format-status');
+      
+      // Populate UI with backend data
+      document.getElementById('res-type').textContent = data.documentType || "Unknown";
+      document.getElementById('res-name').textContent = data.extractedName || "Unknown";
+      scoreText.textContent = data.score || "0%";
+      scoreLabelText.textContent = data.label || "Unknown";
+      resFormatStatus.textContent = data.formatStatus || "Unknown";
+      resNotes.textContent = data.notes || "No notes provided by NLM.";
 
-      if (mockIsFake) {
+      if (data.isFake) {
         scoreRing.classList.add('danger');
-        scoreText.textContent = "12%";
-        scoreLabelText.textContent = "High Risk";
-        resFormatStatus.textContent = "Failed";
         resFormatStatus.style.color = "var(--danger)";
-        resNotes.textContent = "NLM detects severe structural anomalies. Text alignment on DOB field indicates digital tampering. Verhoeff checksum validation failed.";
         resNotes.style.color = "var(--danger)";
       } else {
         scoreRing.classList.remove('danger');
-        scoreText.textContent = "98%";
-        scoreLabelText.textContent = "Authentic";
-        resFormatStatus.textContent = "Verified";
         resFormatStatus.style.color = "var(--success)";
-        resNotes.textContent = "Natural Language Model confirms textual alignments match standard issued templates. No synthetic text overlays detected.";
         resNotes.style.color = "#ccc";
       }
 
-    }, 2500); // 2.5 second simulated processing time
+    } catch (error) {
+      console.error("File processing error:", error);
+      scanOverlay.classList.remove('active');
+      resultsEmpty.textContent = "Error processing document. Check console and backend connection.";
+    }
   }
 
-  // Reset Workspace Button
   resetBtn.addEventListener('click', () => {
     fileInput.value = "";
     fileInfo.textContent = "";
