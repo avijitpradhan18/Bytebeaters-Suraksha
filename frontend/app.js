@@ -1,6 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Where the FastAPI backend runs. Change this if the backend is on another machine/URL.
-  const API_BASE = "http://127.0.0.1:8000";
+  // Backend address:
+  //  - page opened as a file, or from serve_frontend.py (port 5500)  -> local backend on port 8000
+  //  - page served BY the backend (127.0.0.1:8000 or the public ngrok link) -> same server, no prefix
+  const isLocalStatic = location.protocol === "file:" || location.port === "5500";
+  const API_BASE = isLocalStatic ? "http://127.0.0.1:8000" : "";
+
+  // The password typed at login is the demo access key. Kept in memory only.
+  let accessKey = "";
+  const apiHeaders = () => ({ "X-Demo-Key": accessKey, "ngrok-skip-browser-warning": "true" });
 
   /* --- VIEW ROUTING (prototype login: any email/password is accepted) --- */
   const loginScreen = document.getElementById('login-screen');
@@ -9,20 +16,30 @@ document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.getElementById('logout-btn');
   const loginBtn = document.getElementById('login-btn');
 
-  loginForm.addEventListener('submit', (e) => {
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     loginBtn.textContent = "Verifying...";
-    setTimeout(() => {
+    accessKey = document.getElementById('password').value;
+    try {
+      const res = await fetch(`${API_BASE}/api/auth-check`, { headers: apiHeaders() });
+      if (res.status === 401) throw new Error("Wrong access key");
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
       loginScreen.classList.add('hidden');
       dashboardScreen.classList.remove('hidden');
       dashboardScreen.classList.add('fade-in');
-    }, 800);
+    } catch (err) {
+      accessKey = "";
+      loginBtn.textContent = err.message === "Wrong access key"
+        ? "Wrong access key - try again"
+        : "Cannot reach server - try again";
+    }
   });
 
   logoutBtn.addEventListener('click', () => {
     dashboardScreen.classList.add('hidden');
     loginScreen.classList.remove('hidden');
     loginBtn.textContent = "Authenticate";
+    accessKey = "";
     document.getElementById('email').value = "";
     document.getElementById('password').value = "";
   });
@@ -109,13 +126,17 @@ document.addEventListener("DOMContentLoaded", () => {
       formData.append("document", docFile);
       formData.append("live_photo", liveFile);
 
-      const res = await fetch(`${API_BASE}/api/scan`, { method: "POST", body: formData });
-      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const res = await fetch(`${API_BASE}/api/scan`, { method: "POST", body: formData, headers: apiHeaders() });
+      if (res.status === 401) throw new Error("Access key rejected - please log in again");
+      if (!res.ok) {
+        let detail = "";
+        try { detail = (await res.json()).detail || ""; } catch (_) {}
+        throw new Error(detail || `Server returned ${res.status}`);
+      }
       const data = await res.json();
       showResult(data);
     } catch (err) {
-      resultsEmpty.textContent = "Could not complete the scan: " + err.message +
-        ". Check that the backend is running at " + API_BASE + ".";
+      resultsEmpty.textContent = "Could not complete the scan: " + err.message + ".";
     } finally {
       scanOverlay.classList.remove('active');
       busy = false; updateButton();
